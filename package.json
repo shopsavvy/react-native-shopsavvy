@@ -60,7 +60,7 @@
     }
   },
   "dependencies": {
-    "@shopsavvy/sdk": "^1.1.0"
+    "@shopsavvy/sdk": "^1.4.0"
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.0.0",

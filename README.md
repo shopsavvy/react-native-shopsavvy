@@ -72,7 +72,7 @@ Get current offers across retailers for a product. Accepts a barcode, ASIN, URL,
 ```tsx
 const { data, loading, error } = usePriceComparison('B09XS7JWHH')
 
-// data.data[0].offers => [{ retailer: 'amazon.com', price: 199.99, ... }, ...]
+// data.data[0].offers => [{ retailer: 'Amazon', price: 199.99, ... }, ...]
 ```
 
 ### `usePriceHistory(identifier, days?)`
@@ -82,7 +82,8 @@ Get historical prices for the last `days` days (default 30).
 ```tsx
 const { data, loading, error } = usePriceHistory('012345678901', 90)
 
-// data.data => [{ retailer: 'amazon.com', history: [{ timestamp, price, ... }, ...] }, ...]
+// data.data => one entry per product: [{ title, shopsavvy, offers: [{ retailer: 'Amazon', history: [{ timestamp, price, currency, availability }, ...] }, ...] }]
+// history is newest first; a point's currency is null when none was recorded
 ```
 
 ### `useDeals(options?)`

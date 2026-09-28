@@ -72,7 +72,7 @@ describe('usePriceComparison', () => {
   test('fetches current offers by identifier', async () => {
     const { result } = renderHook(() => usePriceComparison('0194253397137'), { wrapper })
     await waitFor(() => expect(result.current.data).not.toBeNull())
-    expect(result.current.data?.data[0].offers.map((o) => o.retailer)).toEqual(['amazon.com', 'bestbuy.com'])
+    expect(result.current.data?.data[0].offers.map((o) => o.retailer)).toEqual(['Amazon', 'Best Buy'])
     expect(lastRequestTo('/v1/products/offers').params).toMatchObject({ ids: '0194253397137' })
   })
 
@@ -88,7 +88,15 @@ describe('usePriceHistory', () => {
   test('requests start/end spanning the requested number of days, ending today', async () => {
     const { result } = renderHook(() => usePriceHistory('0194253397137', 90), { wrapper })
     await waitFor(() => expect(result.current.data).not.toBeNull())
-    expect(result.current.data?.data[0].history).toHaveLength(2)
+    // products -> offers -> history, as the Data API returns it
+    const product = result.current.data!.data[0]
+    expect(product.shopsavvy).toBe('ss-airpods-pro-2')
+    expect(product.offers.map((o) => o.retailer)).toEqual(['Amazon', 'eBay'])
+    expect(product.offers[0].history.map((h) => [h.timestamp, h.price, h.currency])).toEqual([
+      ['2026-08-15T00:00:00Z', 189.99, 'USD'],
+      ['2026-08-01T00:00:00Z', 249.0, null],
+    ])
+    expect(product.offers[1].history).toEqual([])
 
     const { params } = lastRequestTo('/v1/products/offers/history')
     expect(params.ids).toBe('0194253397137')

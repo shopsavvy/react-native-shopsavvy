@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import type {
   DealsResponse,
   ProductWithOffers,
-  OfferWithHistory,
+  ProductWithOfferHistory,
   ProductSearchResult,
   APIResponse,
 } from '@shopsavvy/sdk'
@@ -163,7 +163,8 @@ export function usePriceComparison(
  * Get price history for a product over a given number of days.
  *
  * Computes start/end dates automatically from the `days` parameter.
- * Returns historical price entries per offer (retailer).
+ * `data.data` has one entry per product, each with its `offers`, and each offer
+ * carries its own `history` (newest first).
  *
  * @param identifier - Product identifier
  * @param days - Number of days of history to fetch (default 30)
@@ -173,8 +174,10 @@ export function usePriceComparison(
  * const { data, loading } = usePriceHistory('012345678901', 90)
  *
  * if (data) {
- *   data.data.forEach(offer => {
- *     console.log(`${offer.retailer}: ${offer.history.length} data points`)
+ *   data.data.forEach(product => {
+ *     product.offers.forEach(offer => {
+ *       console.log(`${offer.retailer}: ${offer.history.length} data points`)
+ *     })
  *   })
  * }
  * ```
@@ -182,9 +185,9 @@ export function usePriceComparison(
 export function usePriceHistory(
   identifier: string | null,
   days: number = 30
-): HookResult<APIResponse<OfferWithHistory[]>> {
+): HookResult<APIResponse<ProductWithOfferHistory[]>> {
   const client = useShopSavvyClient()
-  const [data, setData] = useState<APIResponse<OfferWithHistory[]> | null>(null)
+  const [data, setData] = useState<APIResponse<ProductWithOfferHistory[]> | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const mountedRef = useRef(true)

@@ -26,6 +26,7 @@ export type {
   ProductWithOffers,
   Offer,
   OfferWithHistory,
+  ProductWithOfferHistory,
   PriceHistoryEntry,
   ProductSearchResult,
   APIResponse,
