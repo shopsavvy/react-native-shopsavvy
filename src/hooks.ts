@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type {
-  ProductDetails,
+  DealsResponse,
   ProductWithOffers,
   OfferWithHistory,
   ProductSearchResult,
@@ -15,58 +15,6 @@ export interface HookResult<T> {
   loading: boolean
   error: Error | null
   refetch: () => void
-}
-
-// ── Deal types (defined locally until SDK publishes deals support) ──
-
-export interface Deal {
-  path: string
-  title: string
-  subtitle?: string
-  description?: string
-  emoji?: string
-  grade: {
-    letter: string
-    suffix?: string
-    value: number
-    justification?: string
-  }
-  pricing: {
-    current: number
-    original?: number
-    currency: string
-  }
-  retailer: {
-    name: string
-  }
-  product?: string
-  url: string
-  image?: { url: string }
-  votes: {
-    upvotes: number
-    downvotes: number
-    score: number
-  }
-  comment_count: number
-  tags?: { slug: string; display: string }[]
-  product_scores?: Record<string, number>
-  expires_at?: string
-  created_at: string
-}
-
-export interface DealsResponse {
-  success: boolean
-  deals: Deal[]
-  pagination: {
-    total: number
-    has_more: boolean
-    limit: number
-    offset: number
-  }
-  meta?: {
-    credits_used: number
-    credits_remaining: number
-  }
 }
 
 // ── useProductSearch ──
@@ -226,7 +174,7 @@ export function usePriceComparison(
  *
  * if (data) {
  *   data.data.forEach(offer => {
- *     console.log(`${offer.retailer}: ${offer.price_history.length} data points`)
+ *     console.log(`${offer.retailer}: ${offer.history.length} data points`)
  *   })
  * }
  * ```
@@ -295,8 +243,8 @@ export function usePriceHistory(
  * Supports sorting, filtering by category/retailer/tag/grade, and
  * price range filters. Results include community votes and expert grades.
  *
- * Calls the ShopSavvy deals API directly using the same API key
- * from the ShopSavvyProvider context.
+ * Uses the client from ShopSavvyProvider, so requests carry your API key
+ * and honour the provider's baseUrl and timeout.
  *
  * @param options - Optional sort, filter, and pagination parameters
  *
@@ -325,17 +273,14 @@ export function useDeals(
     grade?: string
   }
 ): HookResult<DealsResponse> {
-  // We still require the provider for context validation, but deals
-  // will use the SDK's getDeals when the next SDK version ships.
-  // For now we verify the provider is present.
-  useShopSavvyClient()
-
+  const client = useShopSavvyClient()
   const [data, setData] = useState<DealsResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const mountedRef = useRef(true)
 
-  // Serialize options to a stable string for dependency tracking
+  // Serialize options to a stable string so callers can pass an inline
+  // object literal without re-fetching on every render.
   const optionsKey = JSON.stringify(options ?? {})
 
   const fetch = useCallback(async () => {
@@ -343,27 +288,7 @@ export function useDeals(
     setError(null)
 
     try {
-      const params = new URLSearchParams()
-      if (options) {
-        for (const [key, value] of Object.entries(options)) {
-          if (value !== undefined) params.set(key, String(value))
-        }
-      }
-      const query = params.toString()
-      const url = `https://api.shopsavvy.com/v1/deals${query ? `?${query}` : ''}`
-
-      const response = await globalThis.fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'react-native-shopsavvy/1.0.0',
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
-
-      const result = (await response.json()) as DealsResponse
+      const result = await client.getDeals(JSON.parse(optionsKey))
       if (mountedRef.current) {
         setData(result)
       }
@@ -376,7 +301,7 @@ export function useDeals(
         setLoading(false)
       }
     }
-  }, [optionsKey])
+  }, [client, optionsKey])
 
   useEffect(() => {
     mountedRef.current = true

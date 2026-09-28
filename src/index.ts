@@ -17,7 +17,7 @@ export {
   usePriceHistory,
   useDeals,
 } from './hooks'
-export type { HookResult, Deal, DealsResponse } from './hooks'
+export type { HookResult } from './hooks'
 
 // Re-export SDK types for convenience
 export type {
@@ -31,4 +31,6 @@ export type {
   APIResponse,
   APIMeta,
   PaginationInfo,
+  Deal,
+  DealsResponse,
 } from '@shopsavvy/sdk'
