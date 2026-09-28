@@ -2,21 +2,36 @@
   "name": "react-native-shopsavvy",
   "version": "1.0.0",
   "description": "React Native hooks and components for ShopSavvy Data API — product search, price comparison, price history, and deals",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist"
   ],
+  "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "prepare": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm run build"
   },
   "keywords": [
     "react-native",
+    "expo",
     "shopsavvy",
     "price-comparison",
     "shopping",
@@ -29,9 +44,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shopsavvy/react-native-shopsavvy"
+    "url": "git+https://github.com/shopsavvy/react-native-shopsavvy.git"
   },
-  "homepage": "https://shopsavvy.com/data",
+  "homepage": "https://shopsavvy.com/integrations/react-native",
   "bugs": {
     "url": "https://github.com/shopsavvy/react-native-shopsavvy/issues"
   },
@@ -39,12 +54,21 @@
     "react": ">=17.0.0",
     "react-native": ">=0.70.0"
   },
+  "peerDependenciesMeta": {
+    "react-native": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "@shopsavvy/sdk": "^1.0.2"
+    "@shopsavvy/sdk": "^1.1.0"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@types/bun": "latest",
     "@types/react": "^18.0.0",
     "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   }
